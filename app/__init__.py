@@ -19,4 +19,8 @@ def create_app(config_class="config.Config"):
     from app.routes import bp as routes_bp
     app.register_blueprint(routes_bp)
 
+    with app.app_context():
+        from app import models
+        db.create_all()
+
     return app
