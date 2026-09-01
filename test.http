@@ -18,3 +18,14 @@ Content-Type: application/json
     "password": "mypassword123"
 
 }
+
+
+#####
+
+POST http://127.0.0.1:5000/urls
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4ODI4ODk0MCwianRpIjoiZDk5NGQzNDQtNzYxOS00MmNjLTk2NjYtOGRlOTNkYjUzZTBjIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3ODgyODg5NDAsImNzcmYiOiI2YTIzODE3My1iZGFiLTQ2ZTMtYThjNy1mMDE4MmZmYWY1ZGUiLCJleHAiOjE3ODgyOTI1NDB9.aQihLbA3mStLxRcghgmjk684Np80oD9wWRe7M9EB1iY
+Content-Type: application/json
+
+{
+    "original_url": "google.com"
+}
