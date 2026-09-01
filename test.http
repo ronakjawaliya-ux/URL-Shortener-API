@@ -1,0 +1,20 @@
+POST http://127.0.0.1:5000/auth/register
+Content-Type: application/json
+
+{
+    "email": "ronak@example.com",
+    "password": "mypassword123"
+
+}
+
+
+#####
+
+POST http://127.0.0.1:5000/auth/login
+Content-Type: application/json
+
+{
+    "email": "ronak@example.com",
+    "password": "mypassword123"
+
+}
