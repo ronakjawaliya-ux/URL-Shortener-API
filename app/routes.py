@@ -1,97 +1,249 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from urllib.parse import urlparse
 import string
 import secrets
 
-
 from app import db
-from app.models import User, ShortURL
+from app.models import User, ShortURL, ClickEvent
+
 
 bp = Blueprint("routes", __name__)
 
 
-@bp.route("/auth/login", methods=["POST"])
-def login():
+# -------------------------
+# AUTHENTICATION
+# -------------------------
+
+@bp.route("/auth/register", methods=["POST"])
+def register():
+
     data = request.get_json()
 
     if not data:
         return {"message": "Request body is required."}, 400
 
-    if "email" not in data:
-        return {"message": "Email is required."}, 400
+    username = data.get("username")
+    password = data.get("password")
 
-    if "password" not in data:
-        return {"message": "Password is required."}, 400
+    if not username or not password:
+        return {"message": "Username and password are required."}, 400
 
-    email = data["email"]
-    password = data["password"]
+    existing_user = User.query.filter_by(username=username).first()
 
-    user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return {"message": "Username already exists."}, 409
 
-    if user is None:
-        return {"message": "Invalid email or password."}, 401
+    hashed_password = generate_password_hash(password)
 
-    if not check_password_hash(user.password_hash, password):
-        return {"message": "Invalid email or password."}, 401
+    user = User(
+        username=username,
+        password=hashed_password
+    )
+
+    db.session.add(user)
+    db.session.commit()
+
+    return {
+        "message": "User registered successfully."
+    }, 201
+
+
+@bp.route("/auth/login", methods=["POST"])
+def login():
+
+    data = request.get_json()
+
+    if not data:
+        return {"message": "Request body is required."}, 400
+
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return {"message": "Username and password are required."}, 400
+
+    user = User.query.filter_by(username=username).first()
+
+    if not user or not check_password_hash(user.password, password):
+        return {"message": "Invalid username or password."}, 401
 
     access_token = create_access_token(identity=str(user.id))
 
     return {
-        "message": "Login successful.",
         "access_token": access_token
     }, 200
 
 
+# -------------------------
+# CREATE SHORT URL
+# -------------------------
 
 @bp.route("/urls", methods=["POST"])
 @jwt_required()
-def create_url():
+def create_short_url():
+
+    user_id = get_jwt_identity()
+
     data = request.get_json()
 
     if not data:
         return {"message": "Request body is required."}, 400
 
-    if "original_url" not in data:
-        return {"message": "Original URL is required."}, 400
+    original_url = data.get("original_url")
 
-    original_url = data["original_url"]
+    if not original_url:
+        return {"message": "original_url is required."}, 400
 
-    if not isinstance(original_url, str) or not original_url.strip():
-        return {"message": "Original URL must be a valid string."}, 400
-
+    # Validate URL
     parsed_url = urlparse(original_url)
 
-    if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
-        return {"message": "Original URL must be a valid HTTP or HTTPS URL."}, 400
+    if parsed_url.scheme not in ["http", "https"] or not parsed_url.netloc:
+        return {"message": "Invalid URL."}, 400
 
-
+    # Generate short code
     characters = string.ascii_letters + string.digits
 
-    short_code = ''.join(secrets.choice(characters) for _ in range(7))
+    while True:
+        short_code = "".join(
+            secrets.choice(characters)
+            for _ in range(6)
+        )
 
-    existing_url = ShortURL.query.filter_by(short_code=short_code).first()
+        existing_url = ShortURL.query.filter_by(
+            short_code=short_code
+        ).first()
 
-    if existing_url is not None:
-        return {"message": "Short code already exists. Please try again."}, 409
+        if not existing_url:
+            break
 
-    user_id = get_jwt_identity()
-
-    new_url = ShortURL(
-        short_code=short_code,
+    short_url = ShortURL(
         original_url=original_url,
+        short_code=short_code,
         user_id=user_id
     )
 
-
-    db.session.add(new_url)
+    db.session.add(short_url)
     db.session.commit()
 
+    return {
+        "message": "Short URL created successfully.",
+        "id": short_url.id,
+        "original_url": short_url.original_url,
+        "short_code": short_url.short_code
+    }, 201
+
+
+# -------------------------
+# REDIRECT
+# -------------------------
+
+@bp.route("/<short_code>", methods=["GET"])
+def redirect_to_original(short_code):
+
+    short_url = ShortURL.query.filter_by(
+        short_code=short_code
+    ).first()
+
+    if not short_url:
+        return {"message": "Short URL not found."}, 404
+
+    # Record click
+    click = ClickEvent(
+        short_url_id=short_url.id
+    )
+
+    db.session.add(click)
+    db.session.commit()
+
+    return redirect(short_url.original_url)
+
+
+# -------------------------
+# GET USER'S URLS
+# -------------------------
+
+@bp.route("/urls", methods=["GET"])
+@jwt_required()
+def get_urls():
+
+    user_id = get_jwt_identity()
+
+    urls = ShortURL.query.filter_by(
+        user_id=user_id
+    ).all()
+
+    result = []
+
+    for url in urls:
+        result.append({
+            "id": url.id,
+            "original_url": url.original_url,
+            "short_code": url.short_code
+        })
 
     return {
-        "message": "URL created successfully.",
-        "id": new_url.id,
-        "short_code": new_url.short_code,
-        "original_url": new_url.original_url
-    }, 201
+        "urls": result
+    }, 200
+
+
+# -------------------------
+# GET SINGLE URL
+# -------------------------
+
+@bp.route("/urls/<int:url_id>", methods=["GET"])
+@jwt_required()
+def get_single_url(url_id):
+
+    user_id = get_jwt_identity()
+
+    short_url = ShortURL.query.filter_by(
+        id=url_id,
+        user_id=user_id
+    ).first()
+
+    if not short_url:
+        return {"message": "URL not found."}, 404
+
+    click_count = ClickEvent.query.filter_by(
+        short_url_id=short_url.id
+    ).count()
+
+    return {
+        "id": short_url.id,
+        "original_url": short_url.original_url,
+        "short_code": short_url.short_code,
+        "clicks": click_count
+    }, 200
+
+
+# -------------------------
+# DELETE URL
+# -------------------------
+
+@bp.route("/urls/<int:url_id>", methods=["DELETE"])
+@jwt_required()
+def delete_url(url_id):
+
+    user_id = get_jwt_identity()
+
+    short_url = ShortURL.query.filter_by(
+        id=url_id,
+        user_id=user_id
+    ).first()
+
+    if not short_url:
+        return {"message": "URL not found."}, 404
+
+    # Delete click events first
+    ClickEvent.query.filter_by(
+        short_url_id=short_url.id
+    ).delete()
+
+    db.session.delete(short_url)
+    db.session.commit()
+
+    return {
+        "message": "Short URL deleted successfully."
+    }, 200

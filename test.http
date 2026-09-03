@@ -29,3 +29,11 @@ Content-Type: application/json
 {
     "original_url": "google.com"
 }
+
+
+#####
+GET http://127.0.0.1:5000/8E5oKSj
+
+
+#####
+GET http://127.0.0.1:5000/abcdefg
