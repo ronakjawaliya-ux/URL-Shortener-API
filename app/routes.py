@@ -24,22 +24,22 @@ def register():
     if not data:
         return {"message": "Request body is required."}, 400
 
-    username = data.get("username")
+    email = data.get("email")
     password = data.get("password")
 
-    if not username or not password:
-        return {"message": "Username and password are required."}, 400
+    if not email or not password:
+        return {"message": "Email and password are required."}, 400
 
-    existing_user = User.query.filter_by(username=username).first()
+    existing_user = User.query.filter_by(email=email).first()
 
     if existing_user:
-        return {"message": "Username already exists."}, 409
+        return {"message": "Email already exists."}, 409
 
     hashed_password = generate_password_hash(password)
 
     user = User(
-        username=username,
-        password=hashed_password
+        email=email,
+        password_hash=hashed_password
     )
 
     db.session.add(user)
@@ -58,16 +58,16 @@ def login():
     if not data:
         return {"message": "Request body is required."}, 400
 
-    username = data.get("username")
+    email = data.get("email")
     password = data.get("password")
 
-    if not username or not password:
-        return {"message": "Username and password are required."}, 400
+    if not email or not password:
+        return {"message": "Email and password are required."}, 400
 
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter_by(email=email).first()
 
-    if not user or not check_password_hash(user.password, password):
-        return {"message": "Invalid username or password."}, 401
+    if not user or not check_password_hash(user.password_hash, password):
+        return {"message": "Invalid email or password."}, 401
 
     access_token = create_access_token(identity=str(user.id))
 

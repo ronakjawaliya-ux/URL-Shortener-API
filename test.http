@@ -1,38 +1,36 @@
+##### REGISTER
 POST http://127.0.0.1:5000/auth/register
 Content-Type: application/json
 
 {
-    "email": "ronak@example.com",
+    "email": "ronak01@example.com",
     "password": "mypassword123"
-
 }
 
 
-#####
-
+##### LOGIN
 POST http://127.0.0.1:5000/auth/login
 Content-Type: application/json
 
 {
-    "email": "ronak@example.com",
+    "email": "ronak01@example.com",
     "password": "mypassword123"
-
 }
 
 
-#####
-
+##### CREATE SHORT URL - AUTHENTICATED
 POST http://127.0.0.1:5000/urls
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4ODI4ODk0MCwianRpIjoiZDk5NGQzNDQtNzYxOS00MmNjLTk2NjYtOGRlOTNkYjUzZTBjIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3ODgyODg5NDAsImNzcmYiOiI2YTIzODE3My1iZGFiLTQ2ZTMtYThjNy1mMDE4MmZmYWY1ZGUiLCJleHAiOjE3ODgyOTI1NDB9.aQihLbA3mStLxRcghgmjk684Np80oD9wWRe7M9EB1iY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4ODUzOTg3MywianRpIjoiODE5NWE0N2QtZjY4Mi00NGM1LWFjODktYzVlYzQxNTlmNTM2IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODg1Mzk4NzMsImNzcmYiOiJiODkzOTc3ZS0xNTQ1LTQ2MGUtOWRjZS0xZTkzM2U0NzVhYjciLCJleHAiOjE3ODg1NDM0NzN9.3jT_UoJWaaypZoX47dSoatnM1dom3Lznt9Jg-rLeQBs
 Content-Type: application/json
 
 {
-    "original_url": "google.com"
+
+    "original_url": "https://google.com"
 }
 
 
-#####
-GET http://127.0.0.1:5000/8E5oKSj
+### REDIRECT SHORT URL
+GET http://127.0.0.1:5000/hiaJVi
 
 
 #####
