@@ -178,7 +178,9 @@ def redirect_to_original(short_code):
 
     # Record click
     click = ClickEvent(
-        short_url_id=short_url.id
+    short_url_id=short_url.id,
+    referrer=request.referrer,
+    user_agent=request.headers.get("User-Agent")
     )
 
     db.session.add(click)
@@ -243,6 +245,49 @@ def get_single_url(url_id):
         "short_code": short_url.short_code,
         "clicks": click_count
     }, 200
+
+
+
+# -------------------------
+# URL ANALYTICS
+# -------------------------
+
+@bp.route("/urls/<int:url_id>/analytics", methods=["GET"])
+@jwt_required()
+def url_analytics(url_id):
+
+    user_id = get_jwt_identity()
+
+    short_url = ShortURL.query.filter_by(
+        id=url_id,
+        user_id=user_id
+    ).first()
+
+    if not short_url:
+        return {"message": "URL not found."}, 404
+
+    clicks = ClickEvent.query.filter_by(
+        short_url_id=short_url.id
+    ).order_by(
+        ClickEvent.timestamp.desc()
+    ).all()
+
+    return {
+        "url_id": short_url.id,
+        "short_code": short_url.short_code,
+        "original_url": short_url.original_url,
+        "total_clicks": len(clicks),
+        "clicks": [
+            {
+                "id": click.id,
+                "timestamp": click.timestamp.isoformat(),
+                "referrer": click.referrer,
+                "user_agent": click.user_agent
+            }
+            for click in clicks
+        ]
+    }, 200
+
 
 
 # -------------------------
