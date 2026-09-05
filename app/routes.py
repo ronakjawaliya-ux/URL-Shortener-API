@@ -2,6 +2,7 @@ from flask import Blueprint, request, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from urllib.parse import urlparse
+from datetime import datetime, timezone
 import string
 import secrets
 
@@ -115,7 +116,7 @@ def create_short_url():
                 "message": "Invalid expires_at format. Use YYYY-MM-DDTHH:MM:SS."
             }, 400
 
-        if expires_at <= datetime.utcnow():
+        if expires_at <= datetime.now(timezone.utc).replace(tzinfo=None):
             return {
                 "message": "expires_at must be in the future."
             }, 400
@@ -173,7 +174,7 @@ def redirect_to_original(short_code):
     if short_url.expires_at is not None:
         from datetime import datetime
 
-        if datetime.utcnow() >= short_url.expires_at:
+        if datetime.now(timezone.utc).replace(tzinfo=None) >= short_url.expires_at:
             return {"message": "Short URL has expired."}, 410
 
     # Record click
