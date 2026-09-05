@@ -12,6 +12,10 @@ from app.models import User, ShortURL, ClickEvent
 
 bp = Blueprint("routes", __name__)
 
+@bp.route("/health", methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
+
 
 # -------------------------
 # AUTHENTICATION
