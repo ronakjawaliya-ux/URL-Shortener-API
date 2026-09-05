@@ -1,4 +1,4 @@
-##### REGISTER
+### Register
 POST http://127.0.0.1:5000/auth/register
 Content-Type: application/json
 
@@ -8,7 +8,8 @@ Content-Type: application/json
 }
 
 
-##### LOGIN
+
+### Login
 POST http://127.0.0.1:5000/auth/login
 Content-Type: application/json
 
@@ -18,20 +19,48 @@ Content-Type: application/json
 }
 
 
-##### CREATE SHORT URL - AUTHENTICATED
+
+### Create Expiring Url
 POST http://127.0.0.1:5000/urls
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4ODUzOTg3MywianRpIjoiODE5NWE0N2QtZjY4Mi00NGM1LWFjODktYzVlYzQxNTlmNTM2IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODg1Mzk4NzMsImNzcmYiOiJiODkzOTc3ZS0xNTQ1LTQ2MGUtOWRjZS0xZTkzM2U0NzVhYjciLCJleHAiOjE3ODg1NDM0NzN9.3jT_UoJWaaypZoX47dSoatnM1dom3Lznt9Jg-rLeQBs
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4ODYyMzkyOSwianRpIjoiY2MzZmQ4ZTUtMjBmMi00MmNiLWE3NjQtZjRhNzdjZDgyNmU0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODg2MjM5MjksImNzcmYiOiI5YzM1OWY4Ny0zZjhmLTRiY2MtOGM0Yi0wZjk2NzY2MzUwY2IiLCJleHAiOjE3ODg2Mjc1Mjl9.EAs5F_5SUjntxk4P83eDrcrGPdXXcZqZvOqaqrWes54
 Content-Type: application/json
 
 {
-
-    "original_url": "https://google.com"
+    "original_url": "https://example.com",
+    "expires_at": "2026-09-06T12:00:00"
 }
 
 
-### REDIRECT SHORT URL
-GET http://127.0.0.1:5000/hiaJVi
+
+### Test Expiring Url Before Expiration
+GET http://127.0.0.1:5000/ru4o7r
 
 
-#####
-GET http://127.0.0.1:5000/abcdefg
+
+### Get My URLs
+GET http://127.0.0.1:5000/urls
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4ODYyMzkyOSwianRpIjoiY2MzZmQ4ZTUtMjBmMi00MmNiLWE3NjQtZjRhNzdjZDgyNmU0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODg2MjM5MjksImNzcmYiOiI5YzM1OWY4Ny0zZjhmLTRiY2MtOGM0Yi0wZjk2NzY2MzUwY2IiLCJleHAiOjE3ODg2Mjc1Mjl9.EAs5F_5SUjntxk4P83eDrcrGPdXXcZqZvOqaqrWes54
+
+
+
+### Get Single URL
+GET http://127.0.0.1:5000/urls/4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4ODYyMzkyOSwianRpIjoiY2MzZmQ4ZTUtMjBmMi00MmNiLWE3NjQtZjRhNzdjZDgyNmU0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODg2MjM5MjksImNzcmYiOiI5YzM1OWY4Ny0zZjhmLTRiY2MtOGM0Yi0wZjk2NzY2MzUwY2IiLCJleHAiOjE3ODg2Mjc1Mjl9.EAs5F_5SUjntxk4P83eDrcrGPdXXcZqZvOqaqrWes54
+
+
+
+### Get Non-Existent URL
+GET http://127.0.0.1:5000/urls/9999
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4ODYyMzkyOSwianRpIjoiY2MzZmQ4ZTUtMjBmMi00MmNiLWE3NjQtZjRhNzdjZDgyNmU0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODg2MjM5MjksImNzcmYiOiI5YzM1OWY4Ny0zZjhmLTRiY2MtOGM0Yi0wZjk2NzY2MzUwY2IiLCJleHAiOjE3ODg2Mjc1Mjl9.EAs5F_5SUjntxk4P83eDrcrGPdXXcZqZvOqaqrWes54
+
+
+
+### Get Another User's URL
+GET http://127.0.0.1:5000/urls/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4ODYyMzkyOSwianRpIjoiY2MzZmQ4ZTUtMjBmMi00MmNiLWE3NjQtZjRhNzdjZDgyNmU0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODg2MjM5MjksImNzcmYiOiI5YzM1OWY4Ny0zZjhmLTRiY2MtOGM0Yi0wZjk2NzY2MzUwY2IiLCJleHAiOjE3ODg2Mjc1Mjl9.EAs5F_5SUjntxk4P83eDrcrGPdXXcZqZvOqaqrWes54
+
+
+
+### Delete Another User's URL
+DELETE http://127.0.0.1:5000/urls/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4ODYyMzkyOSwianRpIjoiY2MzZmQ4ZTUtMjBmMi00MmNiLWE3NjQtZjRhNzdjZDgyNmU0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODg2MjM5MjksImNzcmYiOiI5YzM1OWY4Ny0zZjhmLTRiY2MtOGM0Yi0wZjk2NzY2MzUwY2IiLCJleHAiOjE3ODg2Mjc1Mjl9.EAs5F_5SUjntxk4P83eDrcrGPdXXcZqZvOqaqrWes54

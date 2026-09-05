@@ -102,6 +102,24 @@ def create_short_url():
     if parsed_url.scheme not in ["http", "https"] or not parsed_url.netloc:
         return {"message": "Invalid URL."}, 400
 
+    # Validate expiration date
+    expires_at = None
+
+    if data.get("expires_at"):
+        from datetime import datetime
+
+        try:
+            expires_at = datetime.fromisoformat(data["expires_at"])
+        except ValueError:
+            return {
+                "message": "Invalid expires_at format. Use YYYY-MM-DDTHH:MM:SS."
+            }, 400
+
+        if expires_at <= datetime.utcnow():
+            return {
+                "message": "expires_at must be in the future."
+            }, 400
+
     # Generate short code
     characters = string.ascii_letters + string.digits
 
@@ -121,7 +139,8 @@ def create_short_url():
     short_url = ShortURL(
         original_url=original_url,
         short_code=short_code,
-        user_id=user_id
+        user_id=user_id,
+        expires_at=expires_at
     )
 
     db.session.add(short_url)
@@ -131,7 +150,8 @@ def create_short_url():
         "message": "Short URL created successfully.",
         "id": short_url.id,
         "original_url": short_url.original_url,
-        "short_code": short_url.short_code
+        "short_code": short_url.short_code,
+        "expires_at": short_url.expires_at.isoformat() if short_url.expires_at else None
     }, 201
 
 
@@ -148,6 +168,13 @@ def redirect_to_original(short_code):
 
     if not short_url:
         return {"message": "Short URL not found."}, 404
+
+    # Check if URL has expired
+    if short_url.expires_at is not None:
+        from datetime import datetime
+
+        if datetime.utcnow() >= short_url.expires_at:
+            return {"message": "Short URL has expired."}, 410
 
     # Record click
     click = ClickEvent(
